@@ -1,24 +1,5 @@
 import mongoose from "mongoose";
-
-interface PriceConfiguration {
-    [key: string]: {
-        priceType: "base" | "additional";
-        avilableInformation: string[];
-    };
-}
-
-interface Attribute {
-    name: string;
-    widgetType: "switch" | "radio";
-    defaultVlaue: string;
-    avilableOptions: string[];
-}
-
-export interface Category {
-    name: string;
-    priceConfiguration: PriceConfiguration;
-    arrtributes: Attribute[];
-}
+import { Attribute, Category, PriceConfiguration } from "./category-types";
 
 const priceConfigurationSchema = new mongoose.Schema<PriceConfiguration>({
     priceType: {
@@ -26,7 +7,7 @@ const priceConfigurationSchema = new mongoose.Schema<PriceConfiguration>({
         enum: ["base", "additional"],
         required: true,
     },
-    avilableInformation: {
+    availableInformation: {
         type: [String],
         required: true,
     },
@@ -42,11 +23,11 @@ const attributeSchema = new mongoose.Schema<Attribute>({
         enum: ["switch", "radio"],
         require: true,
     },
-    defaultVlaue: {
+    defaultValue: {
         type: mongoose.Schema.Types.Mixed,
         required: true,
     },
-    avilableOptions: {
+    availableOptions: {
         type: [String],
         required: true,
     },
@@ -62,7 +43,7 @@ const categorySchema = new mongoose.Schema<Category>({
         of: priceConfigurationSchema,
         required: true,
     },
-    arrtributes: {
+    attributes: {
         type: [attributeSchema],
         required: true,
     },

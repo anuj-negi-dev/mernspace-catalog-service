@@ -1,13 +1,16 @@
-import express, { Request, Response } from "express";
+/* eslint-disable  */
+import express from "express";
 import { CategoryController } from "./category-controller";
 import categoryValidator from "./category-validator";
+import { CategoryService } from "./category-service";
+import logger from "../config/logger";
 
 const router = express.Router();
 
-const categoryController = new CategoryController();
+const categoryService = new CategoryService();
 
-router.post("/", categoryValidator, (req: Request, res: Response) =>
-    categoryController.create(req, res),
-);
+const categoryController = new CategoryController(categoryService, logger);
+
+router.post("/", categoryValidator, categoryController.create);
 
 export default router;
