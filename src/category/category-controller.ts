@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
@@ -16,7 +17,7 @@ export class CategoryController {
     async create(req: Request, res: Response, next: NextFunction) {
         const result = validationResult(req);
         if (!result.isEmpty()) {
-            return next(createHttpError(400, result.array()[0]));
+            return next(createHttpError(400, result.array()[0].msg as string));
         }
         const { name, priceConfiguration, attributes } = req.body as Category;
         const category = await this.categoryService.create({
@@ -24,7 +25,7 @@ export class CategoryController {
             priceConfiguration,
             attributes,
         });
-        this.logger.info(`New category create`, {
+        this.logger.info(`New category created`, {
             id: category._id,
         });
         res.json({
