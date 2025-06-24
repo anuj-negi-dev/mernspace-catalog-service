@@ -6,4 +6,8 @@ export class CategoryService {
         const newcategory = new CategoryModel(category);
         return await newcategory.save();
     }
+
+    async getAll() {
+        return await CategoryModel.find();
+    }
 }

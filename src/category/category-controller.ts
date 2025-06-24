@@ -12,6 +12,7 @@ export class CategoryController {
         private logger: Logger,
     ) {
         this.create = this.create.bind(this);
+        this.getAll = this.getAll.bind(this);
     }
 
     async create(req: Request, res: Response, next: NextFunction) {
@@ -31,5 +32,11 @@ export class CategoryController {
         res.json({
             id: category._id,
         });
+    }
+
+    async getAll(req: Request, res: Response) {
+        const categories = await this.categoryService.getAll();
+        this.logger.info("All Categories list fetched");
+        res.json(categories);
     }
 }
