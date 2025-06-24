@@ -7,6 +7,10 @@ export class CategoryService {
         return await newcategory.save();
     }
 
+    async getOne(categoryId: string) {
+        return await CategoryModel.findOne({ _id: categoryId });
+    }
+
     async getAll() {
         return await CategoryModel.find();
     }
