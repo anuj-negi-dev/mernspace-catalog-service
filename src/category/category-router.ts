@@ -25,5 +25,11 @@ router.post(
 
 router.get("/:categoryId", asyncWrapper(categoryController.getOne));
 router.get("/", asyncWrapper(categoryController.getAll));
+router.delete(
+    "/:categoryId",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    asyncWrapper(categoryController.delete),
+);
 
 export default router;
