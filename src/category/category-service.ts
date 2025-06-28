@@ -7,8 +7,16 @@ export class CategoryService {
         return await newcategory.save();
     }
 
+    async update(categoryId: string, updateData: Partial<Category>) {
+        return await CategoryModel.findByIdAndUpdate(
+            categoryId,
+            { $set: updateData },
+            { new: true },
+        );
+    }
+
     async getOne(categoryId: string) {
-        return await CategoryModel.findById(categoryId);
+        return await CategoryModel.findOne({ _id: categoryId });
     }
 
     async getAll() {
