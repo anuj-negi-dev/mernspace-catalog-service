@@ -8,6 +8,7 @@ import { Product, ProductRequest } from "./product-types";
 import { Logger } from "winston";
 import { FileStorage } from "../common/types/storage";
 // import { UploadedFile } from "express-fileupload";
+// import { UploadedFile } from "express-fileupload";
 // import { v4 as uuidv4 } from "uuid";
 
 export class ProductController {
@@ -17,7 +18,9 @@ export class ProductController {
         private storage: FileStorage,
     ) {
         this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
     }
+
     async create(req: Request, res: Response, next: NextFunction) {
         const result = validationResult(req);
         if (!result.isEmpty()) {
@@ -64,6 +67,63 @@ export class ProductController {
 
         res.json({
             id: newProduct._id,
+        });
+    }
+
+    async update(req: Request, res: Response, next: NextFunction) {
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+            return next(createHttpError(400, result.array()[0].msg as string));
+        }
+        const { productId } = req.params;
+
+        // if(req.files?.image){
+        //     const oldImage = await this.productService.getProductImage(productId)
+
+        //     const image = req.files!.image as UploadedFile
+
+        //     const
+
+        //     await this.storage.upload({
+        //         filename: imageName,
+        //         fileData: image.data.buffer
+        //     })
+        // }
+
+        const {
+            name,
+            description,
+            priceConfiguration,
+            attributes,
+            tenantId,
+            categoryId,
+            isPublish,
+        } = req.body;
+
+        const product = {
+            name,
+            description,
+            priceConfiguration: JSON.parse(
+                priceConfiguration as unknown as string,
+            ),
+            attributes: JSON.parse(attributes as unknown as string),
+            tenantId,
+            categoryId,
+            isPublish,
+            image: "image.png",
+        };
+
+        const updatedProduct = await this.productService.updateProduct(
+            productId,
+            product,
+        );
+
+        this.logger.info("Product has been updated", {
+            id: updatedProduct?._id,
+        });
+
+        res.json({
+            id: updatedProduct?._id,
         });
     }
 }

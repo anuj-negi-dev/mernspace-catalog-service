@@ -10,6 +10,7 @@ import logger from "../config/logger";
 import fileUpload from "express-fileupload";
 import { CloudinaryStorage } from "../common/services/cloudinaryStorage";
 import createHttpError from "http-errors";
+import updateProductValidator from "./update-product-validator";
 
 const router = express.Router();
 
@@ -38,6 +39,15 @@ router.post(
     }),
     createProductValidator,
     asyncWrapper(productController.create),
+);
+
+router.patch(
+    "/:productId",
+    authenticate,
+    canAccess([Roles.ADMIN, Roles.MANAGER]),
+    fileUpload(),
+    updateProductValidator,
+    productController.update,
 );
 
 export default router;
