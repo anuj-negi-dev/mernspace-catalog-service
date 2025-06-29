@@ -6,11 +6,15 @@ import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { Product, ProductRequest } from "./product-types";
 import { Logger } from "winston";
+import { FileStorage } from "../common/types/storage";
+// import { UploadedFile } from "express-fileupload";
+// import { v4 as uuidv4 } from "uuid";
 
 export class ProductController {
     constructor(
         private productService: ProductService,
         private logger: Logger,
+        private storage: FileStorage,
     ) {
         this.create = this.create.bind(this);
     }
@@ -19,6 +23,14 @@ export class ProductController {
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
+
+        // const image = req.files!.image as UploadedFile;
+        // const publicId = await this.storage.upload({
+        //     folderName: "products",
+        //     path: image.tempFilePath,
+        //     publicId: "randomstring",
+        // });
+
         const {
             name,
             description,
@@ -39,7 +51,7 @@ export class ProductController {
             tenantId,
             categoryId,
             isPublish,
-            image: "image.jpeg",
+            image: "image.png",
         };
 
         const newProduct = await this.productService.create(
