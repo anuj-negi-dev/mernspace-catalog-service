@@ -6,8 +6,14 @@ import { Roles } from "../common/constants";
 import createHttpError from "http-errors";
 import createToppingValidator from "./create-topping-validator";
 import { asyncWrapper } from "../common/utils/wrapper";
+import { ToppingController } from "./topping-controller";
+import { ToppingService } from "./topping-service";
 
 const router = express.Router();
+
+const toppingService = new ToppingService();
+
+const toppingController = new ToppingController(toppingService);
 
 router.post(
     "/",
@@ -24,7 +30,7 @@ router.post(
         },
     }),
     createToppingValidator,
-    asyncWrapper,
+    asyncWrapper(toppingController.create),
 );
 
 export default router;
