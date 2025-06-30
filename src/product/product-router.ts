@@ -28,8 +28,6 @@ router.post(
     authenticate,
     canAccess([Roles.ADMIN, Roles.MANAGER]),
     fileUpload({
-        useTempFiles: true,
-        tempFileDir: "./public/tmp/",
         limits: { fileSize: 2 * 1024 * 1024 },
         abortOnLimit: true,
         limitHandler: (req, res, next) => {
@@ -45,7 +43,14 @@ router.patch(
     "/:productId",
     authenticate,
     canAccess([Roles.ADMIN, Roles.MANAGER]),
-    fileUpload(),
+    fileUpload({
+        limits: { fileSize: 2 * 1024 * 1024 },
+        abortOnLimit: true,
+        limitHandler: (req, res, next) => {
+            const error = createHttpError(400, "file size exceeds limit");
+            next(error);
+        },
+    }),
     updateProductValidator,
     productController.update,
 );

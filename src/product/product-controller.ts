@@ -7,6 +7,7 @@ import createHttpError from "http-errors";
 import { Product, ProductRequest } from "./product-types";
 import { Logger } from "winston";
 import { FileStorage } from "../common/types/storage";
+import { AuthRequest } from "../common/types";
 // import { UploadedFile } from "express-fileupload";
 // import { UploadedFile } from "express-fileupload";
 // import { v4 as uuidv4 } from "uuid";
@@ -77,6 +78,25 @@ export class ProductController {
         }
         const { productId } = req.params;
 
+        const product = await this.productService.getProduct(productId);
+
+        if (!product) {
+            return next(createHttpError(404, "Product not found"));
+        }
+
+        const tenant = (req as AuthRequest).auth.tenant;
+
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (tenant !== product.tenantId) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to access this product",
+                    ),
+                );
+            }
+        }
+
         // if(req.files?.image){
         //     const oldImage = await this.productService.getProductImage(productId)
 
@@ -100,7 +120,7 @@ export class ProductController {
             isPublish,
         } = req.body;
 
-        const product = {
+        const productToBeUpdate = {
             name,
             description,
             priceConfiguration: JSON.parse(
@@ -115,7 +135,7 @@ export class ProductController {
 
         const updatedProduct = await this.productService.updateProduct(
             productId,
-            product,
+            productToBeUpdate,
         );
 
         this.logger.info("Product has been updated", {
