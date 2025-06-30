@@ -4,10 +4,11 @@ import { ProductService } from "./product-service";
 import { NextFunction, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
-import { Product, ProductRequest } from "./product-types";
+import { Filter, Product, ProductRequest } from "./product-types";
 import { Logger } from "winston";
 import { FileStorage } from "../common/types/storage";
 import { AuthRequest } from "../common/types";
+import mongoose from "mongoose";
 // import { UploadedFile } from "express-fileupload";
 // import { UploadedFile } from "express-fileupload";
 // import { v4 as uuidv4 } from "uuid";
@@ -20,6 +21,7 @@ export class ProductController {
     ) {
         this.create = this.create.bind(this);
         this.update = this.update.bind(this);
+        this.getAll = this.getAll.bind(this);
     }
 
     async create(req: Request, res: Response, next: NextFunction) {
@@ -145,5 +147,37 @@ export class ProductController {
         res.json({
             id: updatedProduct?._id,
         });
+    }
+
+    async getAll(req: Request, res: Response) {
+        const { q, tenantId, categoryId, isPublish } = req.query;
+
+        const filters: Filter = {};
+
+        if (isPublish === "true") {
+            filters.isPublish = true;
+        }
+
+        if (tenantId) {
+            filters.tenantId = tenantId as string;
+        }
+
+        if (
+            categoryId &&
+            mongoose.Types.ObjectId.isValid(categoryId as string)
+        ) {
+            filters.categoryId = new mongoose.Types.ObjectId(
+                categoryId as string,
+            );
+        }
+
+        const products = await this.productService.getProducts(
+            q as string,
+            filters,
+        );
+
+        this.logger.info("All products fetched successfully");
+
+        res.json(products);
     }
 }
