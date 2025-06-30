@@ -22,6 +22,8 @@ export class ProductController {
         this.create = this.create.bind(this);
         this.update = this.update.bind(this);
         this.getAll = this.getAll.bind(this);
+        this.getOne = this.getOne.bind(this);
+        this.delete = this.delete.bind(this);
     }
 
     async create(req: Request, res: Response, next: NextFunction) {
@@ -185,5 +187,43 @@ export class ProductController {
         this.logger.info("All products fetched successfully");
 
         res.json(products);
+    }
+
+    async getOne(req: Request, res: Response, next: NextFunction) {
+        const { productId } = req.params;
+        const product = await this.productService.getProduct(productId);
+        if (!product) {
+            const error = createHttpError(404, "Product not found!");
+            return next(error);
+        }
+        res.json({
+            id: product._id,
+        });
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction) {
+        const { productId } = req.params;
+        const product = await this.productService.getProduct(productId);
+        const tenant = (req as AuthRequest).auth.tenant;
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (tenant !== product.tenantId) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to access this product",
+                    ),
+                );
+            }
+        }
+        // TODO: Delete the image
+        const deletedProduct =
+            await this.productService.deleteProduct(productId);
+        if (!deletedProduct) {
+            const error = createHttpError(404, "Product not found!");
+            return next(error);
+        }
+        res.json({
+            id: deletedProduct._id,
+        });
     }
 }
