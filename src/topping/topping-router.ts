@@ -52,4 +52,11 @@ router.patch(
     asyncWrapper(toppingController.update),
 );
 
+router.delete(
+    "/:toppingId/tenant/:tenantId",
+    authenticate,
+    canAccess([Roles.ADMIN, Roles.CUSTOMER]),
+    asyncWrapper(toppingController.delete),
+);
+
 export default router;

@@ -92,4 +92,34 @@ export class ToppingController {
             id: updateTopping._id,
         });
     };
+
+    delete = async (req: Request, res: Response, next: NextFunction) => {
+        const { toppingId, tenantId } = req.params;
+
+        const topping = await this.toppingService.getTopping(toppingId);
+
+        if (!topping) {
+            const error = createHttpError(404, "Topping not found!");
+            next(error);
+        }
+
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (
+                !isAllowed(
+                    (req as unknown as AuthRequest).auth.tenant,
+                    tenantId,
+                )
+            ) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to change topping",
+                    ),
+                );
+            }
+        }
+        //image deletion code here
+        await this.toppingService.deleteTopping(toppingId);
+        res.json({});
+    };
 }
