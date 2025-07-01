@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
@@ -19,8 +20,16 @@ export class ToppingController {
             next(createHttpError(400, result.array()[0].msg as string));
         }
         const { name, price, tenantId, isPublish } = req.body;
-        if ((req as AuthRequest).auth.role !== "admin")
-            isAllowed((req as AuthRequest).auth.tenant, tenantId);
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (!isAllowed((req as AuthRequest).auth.tenant, tenantId)) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to change topping",
+                    ),
+                );
+            }
+        }
         //TODO: Image upload code here
         const topping = await this.toppingService.createTopping({
             name,
@@ -30,6 +39,57 @@ export class ToppingController {
         });
         res.json({
             id: topping._id,
+        });
+    };
+
+    update = async (req: Request, res: Response, next: NextFunction) => {
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+            return next(createHttpError(400, result.array()[0].msg as string));
+        }
+
+        const { name, price, tenantId, isPublish } = req.body;
+
+        const { toppingId } = req.params;
+
+        const topping = await this.toppingService.getTopping(toppingId);
+
+        if (!topping) {
+            const error = createHttpError(404, "Topping not found!");
+            next(error);
+        }
+
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (
+                !isAllowed(
+                    (req as unknown as AuthRequest).auth.tenant,
+                    tenantId as string,
+                )
+            ) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to change topping",
+                    ),
+                );
+            }
+        }
+
+        //check if image is there or not and delete the old image and save new
+
+        const updateTopping = await this.toppingService.updateTopping(
+            toppingId,
+            {
+                name,
+                price,
+                tenantId,
+                isPublish,
+                image: "image.jpg",
+            },
+        );
+
+        res.json({
+            id: updateTopping._id,
         });
     };
 }
