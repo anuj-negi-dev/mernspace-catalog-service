@@ -25,4 +25,8 @@ export class ToppingService {
     async deleteTopping(toppingId: string) {
         await ToppingModel.findByIdAndDelete(toppingId);
     }
+
+    async getToppings() {
+        return await ToppingModel.find();
+    }
 }

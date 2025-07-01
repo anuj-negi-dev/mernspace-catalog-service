@@ -122,4 +122,9 @@ export class ToppingController {
         await this.toppingService.deleteTopping(toppingId);
         res.json({});
     };
+
+    getAll = async (req: Request, res: Response) => {
+        const toppings = await this.toppingService.getToppings();
+        res.json(toppings);
+    };
 }

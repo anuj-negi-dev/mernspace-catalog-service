@@ -59,4 +59,6 @@ router.delete(
     asyncWrapper(toppingController.delete),
 );
 
+router.get("/", asyncWrapper(toppingController.getAll));
+
 export default router;
