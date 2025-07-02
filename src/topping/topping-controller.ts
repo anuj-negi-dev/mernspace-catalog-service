@@ -6,9 +6,17 @@ import { AuthRequest } from "../common/types";
 import { isAllowed } from "../common/utils/isAllowed";
 import { ToppingService } from "./topping-service";
 import { CreateRequestBody } from "./topping-types";
+import { Logger } from "winston";
+import { FileStorage } from "../common/types/storage";
+import { v4 as uuidv4 } from "uuid";
+import { UploadedFile } from "express-fileupload";
 
 export class ToppingController {
-    constructor(private toppingService: ToppingService) {}
+    constructor(
+        private toppingService: ToppingService,
+        private logger: Logger,
+        private storage: FileStorage,
+    ) {}
 
     create = async (
         req: Request<object, object, CreateRequestBody>,
@@ -30,12 +38,21 @@ export class ToppingController {
                 );
             }
         }
-        //TODO: Image upload code here
+        const image = req.files!.image as UploadedFile;
+        const imageName = uuidv4();
+        await this.storage.upload({
+            filename: imageName,
+            fileData: image.data.buffer,
+        });
         const topping = await this.toppingService.createTopping({
             name,
             price,
             tenantId,
             isPublish,
+            image: imageName,
+        });
+        this.logger.info("Topping has been created successfully", {
+            id: topping._id,
         });
         res.json({
             id: topping._id,
@@ -75,7 +92,22 @@ export class ToppingController {
             }
         }
 
-        //check if image is there or not and delete the old image and save new
+        let imageName: string | undefined;
+
+        if (req.files?.image) {
+            const oldImage = topping.image;
+
+            const image = req.files.image as UploadedFile;
+
+            imageName = uuidv4();
+
+            await this.storage.upload({
+                filename: imageName,
+                fileData: image.data.buffer,
+            });
+
+            await this.storage.delete(oldImage);
+        }
 
         const updateTopping = await this.toppingService.updateTopping(
             toppingId,
@@ -84,7 +116,7 @@ export class ToppingController {
                 price,
                 tenantId,
                 isPublish,
-                image: "image.jpg",
+                image: imageName ? imageName : topping.image,
             },
         );
 
@@ -118,7 +150,9 @@ export class ToppingController {
                 );
             }
         }
-        //image deletion code here
+
+        await this.storage.delete(topping.image);
+
         await this.toppingService.deleteTopping(toppingId);
         res.json({});
     };

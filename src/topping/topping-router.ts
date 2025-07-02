@@ -9,12 +9,20 @@ import { asyncWrapper } from "../common/utils/wrapper";
 import { ToppingController } from "./topping-controller";
 import { ToppingService } from "./topping-service";
 import updateToppingValidator from "./update-topping-validator";
+import { S3Storage } from "../common/services/S3Storage";
+import logger from "../config/logger";
 
 const router = express.Router();
 
+const s3Storage = new S3Storage();
+
 const toppingService = new ToppingService();
 
-const toppingController = new ToppingController(toppingService);
+const toppingController = new ToppingController(
+    toppingService,
+    logger,
+    s3Storage,
+);
 
 router.post(
     "/",
