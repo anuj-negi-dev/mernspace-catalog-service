@@ -5,7 +5,7 @@ import createHttpError from "http-errors";
 import { AuthRequest } from "../common/types";
 import { isAllowed } from "../common/utils/isAllowed";
 import { ToppingService } from "./topping-service";
-import { CreateRequestBody } from "./topping-types";
+import { CreateRequestBody, Topping } from "./topping-types";
 import { Logger } from "winston";
 import { FileStorage } from "../common/types/storage";
 import { v4 as uuidv4 } from "uuid";
@@ -162,6 +162,19 @@ export class ToppingController {
             page: req.query.page ? parseInt(req.query.page as string) : 1,
             limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
         });
-        res.json(toppings);
+        const finalToppings: Topping[] = (toppings.data as Topping[]).map(
+            (topping: Topping) => {
+                return {
+                    ...topping,
+                    image: this.storage.getObjectUri(topping.image),
+                };
+            },
+        );
+        res.json({
+            data: finalToppings,
+            total: toppings.total,
+            currentPage: toppings.currentPage,
+            perPage: toppings.perPage,
+        });
     };
 }

@@ -188,21 +188,37 @@ export class ProductController {
             },
         );
 
+        const finalProducts: Product[] = (products.data as Product[]).map(
+            (product: Product) => {
+                return {
+                    ...product,
+                    image: this.storage.getObjectUri(product.image),
+                };
+            },
+        );
+
         this.logger.info("All products fetched successfully");
 
-        res.json(products);
+        res.json({
+            data: finalProducts,
+            total: products.total,
+            pageSize: products.pageSize,
+            currentPage: products.currentPage,
+        });
     }
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         const { productId } = req.params;
         const product = await this.productService.getProduct(productId);
+        const finalProduct: Product = {
+            ...product,
+            image: this.storage.getObjectUri(product.image),
+        };
         if (!product) {
             const error = createHttpError(404, "Product not found!");
             return next(error);
         }
-        res.json({
-            id: product._id,
-        });
+        res.json(finalProduct);
     }
 
     async delete(req: Request, res: Response, next: NextFunction) {
