@@ -9,9 +9,9 @@ import { Logger } from "winston";
 import { FileStorage } from "../common/types/storage";
 import { AuthRequest } from "../common/types";
 import mongoose from "mongoose";
-// import { UploadedFile } from "express-fileupload";
-// import { UploadedFile } from "express-fileupload";
-// import { v4 as uuidv4 } from "uuid";
+import { UploadedFile } from "express-fileupload";
+import { v4 as uuidv4 } from "uuid";
+import { isAllowed } from "../common/utils/isAllowed";
 
 export class ProductController {
     constructor(
@@ -32,12 +32,13 @@ export class ProductController {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
 
-        // const image = req.files!.image as UploadedFile;
-        // const publicId = await this.storage.upload({
-        //     folderName: "products",
-        //     path: image.tempFilePath,
-        //     publicId: "randomstring",
-        // });
+        const image = req.files!.image as UploadedFile;
+        const imageName = uuidv4();
+
+        await this.storage.upload({
+            filename: imageName,
+            fileData: image.data.buffer,
+        });
 
         const {
             name,
@@ -59,7 +60,7 @@ export class ProductController {
             tenantId,
             categoryId,
             isPublish,
-            image: "image.png",
+            image: imageName,
         };
 
         const newProduct = await this.productService.create(
@@ -91,7 +92,7 @@ export class ProductController {
         const tenant = (req as AuthRequest).auth.tenant;
 
         if ((req as AuthRequest).auth.role !== "admin") {
-            if (tenant !== product.tenantId) {
+            if (isAllowed(tenant, product.tenantId)) {
                 return next(
                     createHttpError(
                         403,
@@ -100,19 +101,22 @@ export class ProductController {
                 );
             }
         }
+        let imageName: string | undefined;
+        if (req.files?.image) {
+            const oldImage = product.image as unknown as string;
 
-        // if(req.files?.image){
-        //     const oldImage = await this.productService.getProductImage(productId)
+            const image = req.files.image as UploadedFile;
 
-        //     const image = req.files!.image as UploadedFile
+            imageName = uuidv4();
 
-        //     const
+            await this.storage.upload({
+                filename: imageName,
+                fileData: image.data.buffer,
+            });
 
-        //     await this.storage.upload({
-        //         filename: imageName,
-        //         fileData: image.data.buffer
-        //     })
-        // }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            await this.storage.delete(oldImage);
+        }
 
         const {
             name,
@@ -134,7 +138,7 @@ export class ProductController {
             tenantId,
             categoryId,
             isPublish,
-            image: "image.png",
+            image: imageName ? imageName : product.image,
         };
 
         const updatedProduct = await this.productService.updateProduct(
@@ -215,13 +219,16 @@ export class ProductController {
                 );
             }
         }
-        // TODO: Delete the image
+        await this.storage.delete(product.image);
         const deletedProduct =
             await this.productService.deleteProduct(productId);
         if (!deletedProduct) {
             const error = createHttpError(404, "Product not found!");
             return next(error);
         }
+        this.logger.info("Product has been deleted successfully", {
+            id: deletedProduct._id,
+        });
         res.json({
             id: deletedProduct._id,
         });

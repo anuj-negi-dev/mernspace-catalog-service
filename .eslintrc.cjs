@@ -19,5 +19,6 @@ module.exports = {
         "@typescript-eslint/unbound-method": "off",
         "eslint@typescript-eslint/no-misused-promises": "off",
         "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
     },
 };
