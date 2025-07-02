@@ -158,7 +158,10 @@ export class ToppingController {
     };
 
     getAll = async (req: Request, res: Response) => {
-        const toppings = await this.toppingService.getToppings();
+        const toppings = await this.toppingService.getToppings({
+            page: req.query.page ? parseInt(req.query.page as string) : 1,
+            limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
+        });
         res.json(toppings);
     };
 }
