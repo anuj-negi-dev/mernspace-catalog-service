@@ -4,26 +4,29 @@ import categoryRouter from "./category/category-router";
 import cookieParser from "cookie-parser";
 import productRouter from "./product/product-router";
 import cors from "cors";
+import config from "config";
 
 const app = express();
 
-app.get("/", (req: Request, res: Response) => {
-    res.json({
-        message: "Hello from catalog service!",
-    });
-});
+const ALLOWED_DOMAINS = [config.get("frontend.clientUI")];
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: " http://localhost:5173/",
+        origin: ALLOWED_DOMAINS as string[],
         credentials: true,
     }),
 );
 
 app.use("/categories", categoryRouter);
 app.use("/products", productRouter);
+
+app.get("/", (req: Request, res: Response) => {
+    res.json({
+        message: "Hello from catalog service!",
+    });
+});
 
 app.use(globalErrorHandler);
 
