@@ -181,9 +181,11 @@ export class ProductController {
             q as string,
             filters,
             {
-                page: req.query.page ? parseInt(req.query.page as string) : 1,
-                limit: req.query.limit
-                    ? parseInt(req.query.limit as string)
+                page: req.query.currentPage
+                    ? parseInt(req.query.currentPage as string)
+                    : 1,
+                limit: req.query.perPage
+                    ? parseInt(req.query.perPage as string)
                     : 10,
             },
         );
@@ -202,7 +204,7 @@ export class ProductController {
         res.json({
             data: finalProducts,
             total: products.total,
-            pageSize: products.pageSize,
+            pageSize: products.perPage,
             currentPage: products.currentPage,
         });
     }
