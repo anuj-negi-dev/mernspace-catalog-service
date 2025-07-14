@@ -64,7 +64,7 @@ export class ProductService {
             {
                 $unwind: "$category",
             },
-        ]);
+        ]).sort({ createdAt: -1 });
 
         return ProductModel.aggregatePaginate(aggregate, {
             ...paginateQuery,

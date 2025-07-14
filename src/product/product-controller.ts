@@ -92,7 +92,7 @@ export class ProductController {
         const tenant = (req as AuthRequest).auth.tenant;
 
         if ((req as AuthRequest).auth.role !== "admin") {
-            if (isAllowed(tenant, product.tenantId)) {
+            if (!isAllowed(tenant, product.tenantId)) {
                 return next(
                     createHttpError(
                         403,
