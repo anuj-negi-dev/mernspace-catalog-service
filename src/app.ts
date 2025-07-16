@@ -8,7 +8,10 @@ import config from "config";
 
 const app = express();
 
-const ALLOWED_DOMAINS = [config.get("frontend.clientUI")];
+const ALLOWED_DOMAINS = [
+    config.get("frontend.adminUI"),
+    config.get("frontend.clientUI"),
+];
 
 app.use(express.json());
 app.use(cookieParser());
