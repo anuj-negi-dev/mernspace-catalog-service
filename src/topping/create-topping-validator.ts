@@ -11,6 +11,7 @@ export default [
 
     body("image").custom((value, { req }) => {
         if (!req.files) throw new Error("Topping image is required");
+        return true;
     }),
 
     body("tenantId").exists().withMessage("Tenant Id is required"),

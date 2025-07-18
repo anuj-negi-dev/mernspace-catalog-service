@@ -46,7 +46,7 @@ export class ToppingController {
         });
         const topping = await this.toppingService.createTopping({
             name,
-            price,
+            price: Number(price),
             tenantId,
             isPublish,
             image: imageName,
@@ -158,10 +158,18 @@ export class ToppingController {
     };
 
     getAll = async (req: Request, res: Response) => {
-        const toppings = await this.toppingService.getToppings({
-            page: req.query.page ? parseInt(req.query.page as string) : 1,
-            limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
-        });
+        const { tenantId } = req.query;
+        const toppings = await this.toppingService.getToppings(
+            {
+                page: req.query.currentPage
+                    ? parseInt(req.query.currentPage as string)
+                    : 1,
+                limit: req.query.perPage
+                    ? parseInt(req.query.perPage as string)
+                    : 10,
+            },
+            tenantId as string,
+        );
         const finalToppings: Topping[] = (toppings.data as Topping[]).map(
             (topping: Topping) => {
                 return {

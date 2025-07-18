@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import productRouter from "./product/product-router";
 import cors from "cors";
 import config from "config";
+import toppingRouter from "./topping/topping-router";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(
 
 app.use("/categories", categoryRouter);
 app.use("/products", productRouter);
+app.use("/toppings", toppingRouter);
 
 app.get("/", (req: Request, res: Response) => {
     res.json({

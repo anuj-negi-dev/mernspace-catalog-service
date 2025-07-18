@@ -27,8 +27,17 @@ export class ToppingService {
         await ToppingModel.findByIdAndDelete(toppingId);
     }
 
-    async getToppings(paginateQuery: { limit: number; page: number }) {
-        const aggregate = ToppingModel.aggregate();
+    async getToppings(
+        paginateQuery: { limit: number; page: number },
+        tenantId: string,
+    ) {
+        const aggregate = ToppingModel.aggregate([
+            {
+                $match: {
+                    tenantId,
+                },
+            },
+        ]);
         return ToppingModel.aggregatePaginate(aggregate, {
             ...paginateQuery,
             customLabels: paginationLabels,
