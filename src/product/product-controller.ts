@@ -12,12 +12,14 @@ import mongoose from "mongoose";
 import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import { isAllowed } from "../common/utils/isAllowed";
+import { MessageProducerBroker } from "../common/types/broker";
 
 export class ProductController {
     constructor(
         private productService: ProductService,
         private logger: Logger,
         private storage: FileStorage,
+        private broker: MessageProducerBroker,
     ) {
         this.create = this.create.bind(this);
         this.update = this.update.bind(this);
@@ -65,6 +67,14 @@ export class ProductController {
 
         const newProduct = await this.productService.create(
             product as unknown as Product,
+        );
+
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify({
+                _id: newProduct._id,
+                priceConfiguration: newProduct.priceConfiguration,
+            }),
         );
 
         this.logger.info("New Product is created", {
@@ -144,6 +154,14 @@ export class ProductController {
         const updatedProduct = await this.productService.updateProduct(
             productId,
             productToBeUpdate,
+        );
+
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify({
+                _id: updatedProduct._id,
+                priceConfiguration: updatedProduct.priceConfiguration,
+            }),
         );
 
         this.logger.info("Product has been updated", {
