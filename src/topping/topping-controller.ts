@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
@@ -10,12 +11,14 @@ import { Logger } from "winston";
 import { FileStorage } from "../common/types/storage";
 import { v4 as uuidv4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
+import { MessageProducerBroker } from "../common/types/broker";
 
 export class ToppingController {
     constructor(
         private toppingService: ToppingService,
         private logger: Logger,
         private storage: FileStorage,
+        private broker: MessageProducerBroker,
     ) {}
 
     create = async (
@@ -51,6 +54,14 @@ export class ToppingController {
             isPublish,
             image: imageName,
         });
+        await this.broker.sendMessage(
+            "topping",
+            JSON.stringify({
+                _id: topping._id,
+                price: topping.price,
+                tenantId: topping.tenantId,
+            }),
+        );
         this.logger.info("Topping has been created successfully", {
             id: topping._id,
         });
@@ -118,6 +129,15 @@ export class ToppingController {
                 isPublish,
                 image: imageName ? imageName : topping.image,
             },
+        );
+
+        await this.broker.sendMessage(
+            "topping",
+            JSON.stringify({
+                _id: topping._id,
+                price: topping.price,
+                tenantId: topping.tenantId,
+            }),
         );
 
         res.json({
