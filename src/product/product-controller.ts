@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Request } from "express-jwt";
 import { ProductService } from "./product-service";
@@ -13,6 +14,7 @@ import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import { isAllowed } from "../common/utils/isAllowed";
 import { MessageProducerBroker } from "../common/types/broker";
+import { mapToObject } from "../utils";
 
 export class ProductController {
     constructor(
@@ -73,7 +75,12 @@ export class ProductController {
             "product",
             JSON.stringify({
                 _id: newProduct._id,
-                priceConfiguration: newProduct.priceConfiguration,
+                priceConfiguration: mapToObject(
+                    newProduct.priceConfiguration as unknown as Map<
+                        string,
+                        any
+                    >,
+                ),
             }),
         );
 
@@ -160,7 +167,12 @@ export class ProductController {
             "product",
             JSON.stringify({
                 _id: updatedProduct._id,
-                priceConfiguration: updatedProduct.priceConfiguration,
+                priceConfiguration: mapToObject(
+                    updatedProduct.priceConfiguration as unknown as Map<
+                        string,
+                        any
+                    >,
+                ),
             }),
         );
 
